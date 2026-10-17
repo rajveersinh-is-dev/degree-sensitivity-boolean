@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "degree_sensitivity_boolean"
+version = "1.0.0"
+description = "FrontierMath degree-sensitivity-boolean: exact reductions, Farkas kills, machine-verified (10,4) refutation, (14,5) obstruction analysis, and honest computational frontier."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "rajveersinh-is-dev"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.urls]
+Homepage = "https://github.com/rajveersinh-is-dev/degree-sensitivity-boolean"
+
+[tool.setuptools]
+py-modules = ['']

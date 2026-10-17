@@ -17,14 +17,28 @@ Integrality of all b_k, c^{(i)}_k is REQUIRED for any genuine example.
 This MILP is a pure relaxation (all constraints are necessary), so
 INFEASIBLE => no degree-<=d Boolean function has all n directions sensitive.
 """
-import sys
+from __future__ import annotations
+
 from fractions import Fraction as Fr
 from math import comb
-import numpy as np
+import sys
+
 from scipy.optimize import milp, LinearConstraint, Bounds
+import numpy as np
 
 
-def build_system(N, d):
+
+def build_system(N, d) -> tuple:
+    """Create system.
+    
+    Args:
+        N:
+        d:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     nv = d - 1
     aff = {}
     for m in range(2, d + 1):
@@ -45,7 +59,7 @@ def build_system(N, d):
     return aff, nv
 
 
-def milp_feasible(n, d, master_only=False, time_limit=None):
+def milp_feasible(n, d, master_only=False, time_limit=None) -> tuple:
     """Return (status, detail). status in {0 feasible, 2 infeasible, other}."""
     nv = d - 1
     N = n - 1
@@ -103,10 +117,29 @@ def milp_feasible(n, d, master_only=False, time_limit=None):
     b_rows = []
 
     def bcol(k):
+        """Bcol.
+        
+        Args:
+            k:
+        
+        Returns:
+            The computed result
+        
+        """
         return layout["b"] + (k - 2)
 
     if not master_only:
         def ccol(i, k):
+            """Ccol.
+            
+            Args:
+                i:
+                k:
+            
+            Returns:
+                The computed result
+            
+            """
             return layout["c"] + i * (N - 1) + (k - 2)
 
         for k in range(2, N + 1):

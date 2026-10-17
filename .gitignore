@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Logs and transient search output
+*.log
+*.out
+experiments/ksol_*.json
+experiments/ksol2_*.json
+experiments/ksol_e*.json
+experiments/ksol_sat_*.json
+experiments/ksol_ls_*.json
+experiments/lsbest_*.json
+experiments/bounds_*.json
+experiments/ksol_or_*.json
+experiments/g8_4.json
+experiments/g5_4.json

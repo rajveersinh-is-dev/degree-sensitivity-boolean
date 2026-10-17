@@ -1,0 +1,132 @@
+FrontierMath Open Problems
+Epoch AI
+Degree vs. Sensitivity for Boolean Functions:
+Toward Explicit Separations Beyond the Kushilevitz Barrier
+Problem statement
+Construct a multilinear polynomial P : Rn →R of degree deg(P) > 1 (for some n > 1) such that
+(i) P is Boolean on the cube, i.e. P(x) ↑{0, 1} for all x ↑{0, 1}n;
+(ii) We have
+|P(0, . . . , 0) ↓P(1, 0, . . . , 0)| + |P(0, . . . , 0) ↓P(0, 1, 0 . . . , 0)| + . . .
++ |P(0, . . . , 0) ↓P(0, 0, . . . , 0, 1)|
+=
+!
+deg(P)
+"ω
+(1)
+for some exponent ω > log 6
+log 3 ↔1.63.
+Equivalently, the goal is to construct a Boolean function f : {0, 1}n →{0, 1} with
+s(f) =
+!
+deg(f)
+"ω
+for some ω > log 6
+log 3.
+where s(f) represents max-sensitivity of the boolean function f, i.e., maxx→{0,1}n #n
+j=1 |f(x)↓f(xj)|, where xj is the
+same vector as x, except j’th bit is ﬂipped. (As is standard, by negating coordinates one may assume the maximum
+sensitivity is attained at x = (0, . . . , 0), and this does not change deg(f).)
+Background and signiﬁcance
+A central theme in the analysis of Boolean functions is the relationship among the many complexity measures
+associated with f, such as degree, (block) sensitivity, decision-tree complexities, certiﬁcate complexity, and others.
+Over the years these measures were shown to be polynomially related, culminating in Huang’s resolution of the
+Sensitivity Conjecture.1 See [6, 2, 7].
+Known lower and upper bounds between s(f) and deg(f).
+It is now known that
+s(f) ↗
+$
+deg(f)
+for all Boolean f ,
+(2)
+and this bound is tight. On the other side we have
+s(f) ↘
+!
+deg(f)
+"2
+for all Boolean f ,
+(3)
+see (e.g.) [6, 7, 5, 10]. It is not known whether quadratic upper bound is tight (up to constants). A 2021 preprint
+of Proskurin [8] shows that
+s(f) ↘
+1
+≃
+10 ↓2(deg(f))2
+where
+1
+↑
+10↓2 ↔0.86....
+1Huang proved s(f) →
+!
+deg(f) settling a question of Nisan and Szegedy.
+1
+Best explicit separation.
+The best explicit separation currently known between degree and sensitivity is due to
+Kushilevitz and is achieved by the following function
+h(z1, . . . , z6) =
+6
+%
+i=1
+zi ↓
+%
+1↔i<j↔6
+zizj
++
+!
+z1z3z4 + z1z2z5 + z1z4z5 + z2z3z4 + z2z3z5 + z1z2z6 + z1z3z6 + z2z4z6 + z3z5z6 + z4z5z6
+"
+,
+(4)
+In this example s(h) = 6 and deg(h) = 3, yielding
+s(h) =
+!
+deg(h)
+"log3 6 =
+!
+deg(h)
+"log(6)/ log(3) .
+This is the largest exponent ω currently achieved by an explicit Boolean function [5, Example 5.4]; see also [10] for
+background.
+Why this problem matters.
+An explicit construction with exponent ω > log(6)/ log(3) would strictly im-
+prove the best known separation between a local measure s(f) and a global algebraic measure deg(f)), and—by
+powering/composition—would immediately give an inﬁnite family witnessing the same exponent. Such constructions
+have historically seeded advances across communication complexity, approximate degree, and learning lower bounds
+[4, 3, 9].
+State of the art
+It is shown in [1] that no solution exists with the n = 10, deg = 4 base. One can reduce any n > 10, deg = 4 example
+to this one by setting variables that aren’t in max-degree monomials to 0. Thus, the next-smallest candidate base is
+n = 14, deg = 5.
+References
+[1]
+Kazuyuki Amano. “Researching the Complexity of Boolean Functions with Computers”. In: Bulletin of the
+EATCS 101 (2010), pp. 64–91. url: https://bulletin.eatcs.org/index.php/beatcs/article/view/181.
+[2]
+H. Buhrman and R. de Wolf. “Complexity Measures and Decision Tree Complexity: A Survey”. In: Theoretical
+Computer Science 288.1 (2002), pp. 21–43. doi: 10.1016/S0304-3975(01)00144-X.
+[3]
+M. Bun and J. Thaler. “Dual Lower Bounds for Approximate Degree and Markov–Bernstein Inequalities”. In:
+International Colloquium on Automata, Languages, and Programming (ICALP 2013). Vol. 7965. Lecture Notes
+in Computer Science. Springer, 2013, pp. 303–314.
+[4]
+P. Gopalan et al. Degree and Sensitivity: Tails of Two Distributions. Electronic Colloquium on Computational
+Complexity, TR16-119. arXiv:1604.07432. 2016. url: https://arxiv.org/abs/1604.07432.
+[5]
+P. Hatami, R. Kulkarni, and D. Pankratov. “Variations on the Sensitivity Conjecture”. In: Theory of Computing
+Library, Graduate Surveys 4 (2011). See Example 5.4 for the Kushilevitz base h and its powering. url: https:
+//theoryofcomputing.org/articles/gs004/gs004.pdf.
+[6]
+H. Huang. “Induced Subgraphs of Hypercubes and a Proof of the Sensitivity Conjecture”. In: Annals of Math-
+ematics 190.3 (2019), pp. 949–955. doi: 10.4007/annals.2019.190.3.6.
+[7]
+N. Nisan and M. Szegedy. “On the Degree of Boolean Functions as Real Polynomials”. In: Computational
+Complexity 4.4 (1994), pp. 301–313. doi: 10.1007/BF01263419.
+[8]
+N. V. Proskurin. On Separation between the Degree of a Boolean Function and the Block Sensitivity. arXiv:2101.08600.
+2021.
+[9]
+R. ˇSpalek. A Dual Polynomial for OR. arXiv:0803.4516. 2008.
+[10]
+A. Tal. “Properties and Applications of Boolean Function Composition”. In: Proceedings of the Innovations
+in Theoretical Computer Science Conference (ITCS 2013). ACM, 2013, pp. 441–454. doi: 10.1145/2422436.
+2422485.
+2

@@ -1,0 +1,13 @@
+m= 2  b_m in [84, 91] of C=91
+m= 3  b_m in [178, 238] of C=364
+m= 4  b_m in [123, 348] of C=1001
+m= 5  b_m in [0, 508] of C=2002
+m= 6  b_m in [39, 1155] of C=3003
+m= 7  b_m in [624, 2220] of C=3432
+m= 8  b_m in [1176, 2688] of C=3003
+m= 9  b_m in [1008, 1998] of C=2002
+m=10  b_m in [449, 1001] of C=1001
+m=11  b_m in [85, 328] of C=364
+m=12  b_m in [0, 62] of C=91
+m=13  b_m in [0, 8] of C=14
+m=14  b_m in [0, 1] of C=1

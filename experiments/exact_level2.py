@@ -9,20 +9,37 @@ Strategy: build the exact rational system, solve numerically with HiGHS, then
 
 Output to UTF-8 file (Windows console is cp1252).
 """
+from __future__ import annotations
+
 from fractions import Fraction as Fr
 from math import comb
 import itertools
-import numpy as np
+
 from scipy.optimize import linprog
+import numpy as np
+
 
 OUT = []
 
 
 def pr(*a):
+    """Pr.
+    
+    """
     OUT.append(" ".join(str(x) for x in a))
 
 
-def build_system(n, d):
+def build_system(n, d) -> tuple:
+    """Create system.
+    
+    Args:
+        n:
+        d:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     nv = d - 1
     aff = {}
     for m in range(2, d + 1):
@@ -50,7 +67,17 @@ def build_system(n, d):
     return rows, aff
 
 
-def check_rows(rows, x):
+def check_rows(rows, x) -> bool:
+    """Check whether rows.
+    
+    Args:
+        rows:
+        x:
+    
+    Returns:
+        bool: Result of type bool
+    
+    """
     for (c, b) in rows:
         s = sum(cc * xx for cc, xx in zip(c, x))
         if s > b:
@@ -58,11 +85,21 @@ def check_rows(rows, x):
     return True
 
 
-def rat(v, max_den=10 ** 8):
+def rat(v, max_den=10 ** 8) -> tuple:
+    """Rat.
+    
+    Args:
+        v:
+        max_den:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     return tuple(Fr(float(x)).limit_denominator(max_den) for x in v)
 
 
-def exact_solve(mat, rhs):
+def exact_solve(mat, rhs) -> tuple:
     """Solve square rational system A x = b by Gaussian elimination.
     Returns solution tuple or None if singular."""
     m = len(mat)
@@ -85,7 +122,17 @@ def exact_solve(mat, rhs):
     return tuple(A[i][m] / A[i][i] for i in range(m))
 
 
-def feas_point(rows, nv):
+def feas_point(rows, nv) -> tuple:
+    """Feas point.
+    
+    Args:
+        rows:
+        nv:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     A = np.array([[float(z) for z in c] for (c, b) in rows])
     b = np.array([float(x) for (c, x) in rows])
     # maximin slack:  A x + t <= b,  maximize t
@@ -111,7 +158,7 @@ def feas_point(rows, nv):
     return None, None
 
 
-def farkas(rows, nv):
+def farkas(rows, nv) -> tuple:
     """Find exact y >= 0 with A^T y = 0, b.y = -1 (Farkas certificate of
     infeasibility of {Ax <= b})."""
     m = len(rows)
@@ -139,22 +186,32 @@ def farkas(rows, nv):
             best = {j: s for j, s in zip(sub, sol)}
             break
     if best is None:
-        return None, "no exact rational ray on support %s" % (list(dbl),)
+        return None, f"no exact rational ray on support {list(dbl)}"
     # verify exactly: A^T y = 0, y >= 0, b.y < 0
     y = [best.get(j, Fr(0)) for j in range(m)]
     for i in range(nv):
         s = sum(Fr(A[j, i]) * y[j] for j in range(m))
         if s != 0:
-            return None, "certificate failed row %d" % i
+            return None, f"certificate failed row {i}"
     s = sum(Fr(b[j]) * y[j] for j in range(m))
     if s >= 0 or any(t < 0 for t in y):
         return None, "certificate failed sign/sum"
     return (y, s), None
 
 
-def run_case(n, d):
+def run_case(n, d) -> bool:
+    """Worker function for case.
+    
+    Args:
+        n:
+        d:
+    
+    Returns:
+        bool: Result of type bool
+    
+    """
     pr("=" * 72)
-    pr("case (n=%d, d=%d)" % (n, d))
+    pr(f"case (n={n}, d={d})")
     rows, aff = build_system(n, d)
     nv = d - 1
     pt, slack = feas_point(rows, nv)
@@ -165,17 +222,17 @@ def run_case(n, d):
         for m in range(2, n + 1):
             c0, v = aff[m]
             w[m] = c0 + sum(a * b for a, b in zip(v, pt))
-        pr("  w_k:", ", ".join("w_%d=%s" % (k, w[k]) for k in range(2, n + 1)))
-        pr("  b_k:", ", ".join("b_%d=%s" % (k, w[k] * comb(n, k)) for k in range(2, n + 1)))
+        pr("  w_k:", ", ".join(f"w_{k}={...}" for k in range(2, n + 1)))
+        pr("  b_k:", ", ".join(f"b_{k}={... * comb(n, k)}" for k in range(2, n + 1)))
         return True
     cert, err = farkas(rows, nv)
     if cert is not None:
         y, s = cert
-        pr("  INFEASIBLE (exact Farkas certificate, b.y = %s)" % s)
+        pr(f"  INFEASIBLE (exact Farkas certificate, b.y = {s})")
         nonzero = [(i, y[i]) for i in range(len(y)) if y[i] != 0]
-        pr("  certificate support: %d rows of %d" % (len(nonzero), len(rows)))
+        pr(f"  certificate support: {len(nonzero)} rows of {len(rows)}")
         return False
-    pr("  UNKNOWN: numerical infeasibility but no exact certificate found (%s)" % err)
+    pr(f"  UNKNOWN: numerical infeasibility but no exact certificate found ({err})")
     return None
 
 

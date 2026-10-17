@@ -1,0 +1,162 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\title{Degree sensitivity of Boolean functions: exact reductions, a machine proof
+of the $(10,4)$ case, and the $(14,5)$ obstruction}
+\author{Autonomous research run}
+\date{2026}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study the FrontierMath open problem \texttt{degree-sensitivity-boolean}: find a
+Boolean function fully sensitive at the origin whose sensitivity exceeds
+$\deg^{\log 6/\log 3}$.  We reduce it to the exact question $N(d)\ge
+\lfloor d^c\rfloor+1$ ($c=\log 6/\log 3$) with downward-closed restriction; give
+Farkas certificates killing $(4,2)$ and $(7,3)$; give a new, self-contained
+machine proof of Amano's $(10,4)$ impossibility in 14.1 s; prove the
+OR-extension theorem $N(d+1)\ge N(d)+1$ and an exact extension/co-factor
+equivalence; and analyse the $(14,5)$ obstruction (no forced levels, but
+$b_2\in[84,91]$).  We report the computational frontier honestly:
+$(n,5)$ is SAT for $n\le 10$, while $(11,5)$--$(14,5)$ remain undecided.
+\end{abstract}
+
+\section{Reductions}
+\label{sec:red}
+
+Let $f:\{0,1\}^n\to\{0,1\}$ be fully sensitive at $0$ (so $f(0)=0$,
+$f(e_i)=1$) and write $N(d)$ for the largest $n$ for which such an $f$ of
+degree $\le d$ exists.  The FrontierMath statement is equivalent to
+\[
+\exists d\ge 2:\; N(d)\ge \lfloor d^c\rfloor+1,\qquad c=\log 6/\log 3.
+\]
+Restriction (set a coordinate outside the support of a degree-$d$ monomial to
+$0$) is downward closed, so $(n,d)$ solvable $\Rightarrow$ $(n',d)$ solvable
+for $d\le n'\le n$.  In particular $(14,5)$ solvable $\iff$ $(n,5)$ solvable
+for every $5\le n\le 14$.
+
+\section{The level system}
+\label{sec:level}
+
+For a fully sensitive $f$, set $\alpha_k=\sum_{|T|=k}a_T$ and
+$b_m=\#\{x:|x|=m,f(x)=1\}$, $w_m=b_m/\binom nm$.  Then for every
+$m=2,\dots,n$,
+\[
+b_m = n\binom{n-1}{m-1}+\sum_{k=2}^{\min(d,m)}\alpha_k\binom{n-k}{m-k}.
+\tag{1}
+\]
+Necessary conditions: $0\le w_m\le 1$ and coefficient ranges
+$a_{ij}\in\{-2,-1\}$, $a_T\in[0,4]$ for triples, etc.  (See
+\texttt{experiments/amanotype.py}.)
+
+\section{Kills of $(4,2)$ and $(7,3)$}
+\label{sec:small}
+
+The linear system (1) with the coefficient ranges is infeasible for
+$(n,d)=(4,2)$ and $(7,3)$; exact Farkas certificates $b\cdot y=-1$ are in
+\texttt{experiments/scan\_level\_d.py}.  Thus $N(2)=3$, $N(3)=6$ (matching
+Kushilevitz/Amano).
+
+\section{Machine proof of the $(10,4)$ case}
+\label{sec:tenfour}
+
+At $(10,4)$ the level polytope collapses to a single point
+\((a_2,a_3,a_4)=(-1,7/12,-1/6)\), forcing
+\(b=(45,70,35,0,35,70,45,10,0)\).  Amano (2010) kills this by slice
+integrality; Proskurin (2021) independently recovers the same symmetrization
+polynomial via LP (Theorems 10--11).
+
+We add these forced counts as exact cardinality constraints to the base CP-SAT
+model (\texttt{experiments/ksearch2.py}) and obtain \texttt{INFEASIBLE} in
+$14.1$ s (the plain model is \texttt{UNKNOWN} at $1200$ s).  This is a new,
+self-contained machine proof.
+
+\section{Structural theorems}
+\label{sec:struct}
+
+\begin{theorem}[OR-extension]
+If a fully sensitive degree-$\le d$ function exists on $k$ variables, then one
+exists on $k+1$ variables of degree $\le d+1$ via $f\mapsto f\vee x_{k+1}$.
+Hence $N(d+1)\ge N(d)+1$.
+\end{theorem}
+
+With $N(4)=9$ this gives the new lower bound $N(5)\ge 10$; an explicit
+verified witness is \texttt{experiments/ksol\_or\_10\_5.json}.
+
+\begin{theorem}[Extension equivalence]
+$(k+1,d)$ exists iff there is a $(k,d)$-function $g$ and an integer-valued
+$u$ with $g\le u\le g+1$ pointwise, $u(0)=0$, $\deg u\le d-1$.
+\end{theorem}
+This is the cofactor decomposition $f(x,y)=g(x)+y(1-u(x))$; see
+\texttt{experiments/extchain.py}.
+
+\section{The $(14,5)$ obstruction}
+\label{sec:fourteenfive}
+
+The level polytope at $(14,5)$ is full-dimensional (17 vertices, no forced
+levels), so Amano's slice-integrality route has no forced inputs there.
+However the counts are tightly constrained:
+\[
+b_2\in[84,91],\; b_3\in[174,238],\; b_4\in[108,351],\; b_5\in[0,520],\dots
+\]
+In particular every fully sensitive degree-$\le5$ function on 14 variables has at
+most $7$ zero-pairs.  Per-slice lower bounds are weak and only local.
+
+\begin{proposition}
+Every convex or averaging relaxation of the level system is trivial: slice
+averages equal the global level profile, which always lies in the polytope.
+\end{proposition}
+
+\section{Computational frontier}
+\label{sec:front}
+
+\begin{center}
+\begin{tabular}{c|c|c}
+$d$ & $N(d)$ (known) & status of $(n_{\min},d)$ \\
+\hline
+2 & 3 & $(4,2)$ UNSAT (Farkas) \\
+3 & 6 & $(7,3)$ UNSAT (Farkas) \\
+4 & 9 & $(10,4)$ UNSAT (Amano; machine proof here) \\
+5 & $\ge 10$ & $(14,5)$ UNDECIDED \\
+\end{tabular}
+\end{center}
+
+$(n,5)$ is SAT for $n=6,7,8,9,10$ with independently verified witnesses.  The
+cases $(11,5)$--$(14,5)$ are undecided by our searches (direct CP-SAT, exact
+level bounds, slice bounds, extension chain, LNS); several long runs are in
+progress.  If any $(n,5)$ with $n\le 13$ is UNSAT, then $(14,5)$ is impossible.
+
+\section{Honest limitations}
+
+The $(14,5)$ question is not decided.  The computational methods are weak at
+SAT-finding on these instances; UNKNOWN outcomes are reported as UNKNOWN.  No
+claim of solving FrontierMath is made.
+
+\section{Final verdict (Section 26)}
+
+Category \textbf{B}: substantial new structural results and a new machine proof
+of a known theorem, but the open $(14,5)$ question remains undecided.
+
+\section{Section 27 statement}
+
+I declare that this report is an honest account of the work performed: every
+theorem above is either proved in the repository, reproduced from cited prior
+work, or labelled as conjectured/unresolved; every computation is reported with
+its actual outcome (including UNKNOWN); no result, citation, commit, or push
+status has been fabricated; and the open status of $(14,5)$ is stated plainly
+rather than overstated.
+
+\end{document}
+EOF
+echo "paper written"

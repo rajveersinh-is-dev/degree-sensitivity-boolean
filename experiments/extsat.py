@@ -9,22 +9,36 @@ SAT => builds and verifies the (k+1,d) function, saves to experiments.
 
 Usage: python extsat.py <k> <d> <gfile> [--time TL] [--tag t]
 """
+from itertools import combinations
 import json
 import os
 import sys
 import time
-from itertools import combinations
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pysat.card import CardEnc, EncType
+from pysat.formula import CNF
+from pysat.solvers import Cadical153
 import extchain
 import ksearch
 
-from pysat.solvers import Cadical153
-from pysat.formula import CNF
-from pysat.card import CardEnc, EncType
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 
 
 def solve(k, d, gfile, time_limit=300, tag=""):
+    """Solve.
+    
+    Args:
+        k:
+        d:
+        gfile:
+        time_limit (int):
+        tag (str):
+    
+    Returns:
+        The computed result
+    
+    """
     with open(gfile) as fh:
         yraw = json.load(fh)
     g = extchain.g_values_from_y(k, d, yraw)
@@ -91,7 +105,7 @@ def solve(k, d, gfile, time_limit=300, tag=""):
     solver = Cadical153()
     t0 = time.time()
     solver.append_formula(cnf)
-    print("CNF: %d clauses, %d vars; solving..." % (len(cnf.clauses), cnf.nv), flush=True)
+    print(f"CNF: {len(cnf.clauses)} clauses, {cnf.nv} vars; solving...", flush=True)
     sat = solver.solve()
     elapsed = time.time() - t0
     print("SAT=%s elapsed=%.2f clauses=%d free=%d derived=%d"
@@ -123,7 +137,7 @@ def solve(k, d, gfile, time_limit=300, tag=""):
 
     bad = [S for S in derived if r_full[S] not in (0, 1)]
     if bad:
-        print("WARNING: %d derived r not in {0,1}: %s" % (len(bad), bad[:5]), flush=True)
+        print(f"WARNING: {len(bad)} derived r not in {{0,1}}: {...}", flush=True)
         return None
 
     # u = g + r (full cube values)
@@ -146,7 +160,7 @@ def solve(k, d, gfile, time_limit=300, tag=""):
     print("verify:", "OK" if ok else err, flush=True)
     if not ok:
         return None
-    fn = "experiments/ksol_sat_%d_%d%s.json" % (k + 1, d, tag)
+    fn = f"experiments/ksol_sat_{k + 1}_{d}{tag}.json"
     with open(fn, "w") as fh:
         json.dump({",".join(map(str, sorted(B))): v for B, v in ysol.items()}, fh)
     print("saved", fn, flush=True)

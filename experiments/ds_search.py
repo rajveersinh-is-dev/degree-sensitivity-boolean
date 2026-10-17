@@ -8,16 +8,30 @@ in F, whose Moebius transform vanishes on all sets of size > d?
 
 We print solutions (as coefficient dictionaries) to inspect their structure.
 """
+from __future__ import annotations
+
+from itertools import combinations
 import json
 import sys
-from itertools import combinations
 
 from ortools.sat.python import cp_model
+
+
 
 BOUND = 10 ** 6
 
 
-def build(n, d):
+def build(n, d) -> tuple:
+    """Create the object.
+    
+    Args:
+        n:
+        d:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     model = cp_model.CpModel()
     coeffs = {}
     for k in range(2, d + 1):
@@ -32,7 +46,20 @@ def build(n, d):
     return model, coeffs
 
 
-def solve(n, d, time_limit, hint=None, workers=8):
+def solve(n, d, time_limit, hint=None, workers=8) -> tuple:
+    """Solve.
+    
+    Args:
+        n:
+        d:
+        time_limit:
+        hint:
+        workers (int):
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     model, coeffs = build(n, d)
     if hint:
         for A, v in hint.items():
@@ -68,6 +95,6 @@ if __name__ == "__main__":
     if sol:
         bad = verify(n, d, sol)
         print("independent verification:", "OK" if not bad else bad[:5])
-        with open("experiments/sol_%d_%d.json" % (n, d), "w") as f:
+        with open(f"experiments/sol_{n}_{d}.json", "w") as f:
             json.dump({",".join(map(str, sorted(A))): v for A, v in sol.items()}, f, indent=0)
-        print("saved experiments/sol_%d_%d.json" % (n, d))
+        print(f"saved experiments/sol_{n}_{d}.json")

@@ -24,20 +24,25 @@ This script decides joint feasibility for given (n,d) numerically and then
 (b) looks for an exact Farkas certificate (infeasibility certificate).
 Optionally runs a MILP with integrality of all counts b_k, c^{(i)}_k.
 """
+from __future__ import annotations
+
 from fractions import Fraction as Fr
 from math import comb
 import itertools
 import numpy as np
-from scipy.optimize import linprog, milp, LinearConstraint, Bounds
+from scipy.optimize import linprog, milp
 
 OUT = []
 
 
 def pr(*a):
+    """Pr.
+    
+    """
     OUT.append(" ".join(str(x) for x in a))
 
 
-def build_system(N, d):
+def build_system(N, d) -> tuple:
     """Affine parametrisation of system (*) for size N, degree d.
     Returns (aff, nv) where aff[m] = (const, coefftuple) expresses
     w_m (the density b_m/C(N,m)) as affine function of free w_2..w_d."""
@@ -68,7 +73,7 @@ def rows_for(aff, N, nv, offset, scale):
     raise NotImplementedError
 
 
-def assemble(n, d, levels=1):
+def assemble(n, d, levels=1) -> tuple:
     """Build the joint system.
     Variables: [master free x (d-1)] + per-i free x (d-1) * n   (levels=1)
     Rows: (list coeffs (length nvars, Fractions), rhs Fraction)  meaning c.x <= rhs.
@@ -91,7 +96,18 @@ def assemble(n, d, levels=1):
 
     rows = []
 
-    def w_expr(off, affv, m):
+    def w_expr(off, affv, m) -> tuple:
+        """W expr.
+        
+        Args:
+            off:
+            affv:
+            m:
+        
+        Returns:
+            tuple: Result of type tuple
+        
+        """
         const, vv = affv[m]
         c = [Fr(0)] * nvars
         for j, z in enumerate(vv):
@@ -146,11 +162,31 @@ def assemble(n, d, levels=1):
     return rows, nvars, master_b, cik
 
 
-def rat(v, md=10 ** 8):
+def rat(v, md=10 ** 8) -> tuple:
+    """Rat.
+    
+    Args:
+        v:
+        md:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     return tuple(Fr(float(x)).limit_denominator(md) for x in v)
 
 
-def check_rows(rows, x):
+def check_rows(rows, x) -> bool:
+    """Check whether rows.
+    
+    Args:
+        rows:
+        x:
+    
+    Returns:
+        bool: Result of type bool
+    
+    """
     for (c, b) in rows:
         s = sum(cc * xx for cc, xx in zip(c, x))
         if s > b:
@@ -158,7 +194,17 @@ def check_rows(rows, x):
     return True
 
 
-def exact_solve(mat, rhs):
+def exact_solve(mat, rhs) -> tuple:
+    """Exact solve.
+    
+    Args:
+        mat (list):
+        rhs:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     m = len(mat)
     A = [[Fr(x) for x in row] + [Fr(rhs[i])] for i, row in enumerate(mat)]
     for col in range(m):
@@ -179,7 +225,17 @@ def exact_solve(mat, rhs):
     return tuple(A[i][m] / A[i][i] for i in range(m))
 
 
-def feas_point(rows, nv):
+def feas_point(rows, nv) -> tuple:
+    """Feas point.
+    
+    Args:
+        rows:
+        nv:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     A = np.array([[float(z) for z in c] for (c, b) in rows])
     b = np.array([float(x) for (_, x) in rows])
     A2 = np.hstack([A, np.ones((A.shape[0], 1))])
@@ -210,7 +266,17 @@ def feas_point(rows, nv):
     return None, None
 
 
-def farkas(rows, nv):
+def farkas(rows, nv) -> tuple:
+    """Farkas.
+    
+    Args:
+        rows (list):
+        nv:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     m = len(rows)
     A = np.array([[float(z) for z in c] for (c, b) in rows])
     b = np.array([float(x) for (_, x) in rows])
@@ -218,7 +284,7 @@ def farkas(rows, nv):
     beq = np.zeros(nv + 1)
     res = linprog(c=b, A_eq=Aeq, b_eq=beq, bounds=[(0, None)] * m, method="highs")
     if res.status != 0:
-        return None, "numeric ray LP status %s" % res.status
+        return None, f"numeric ray LP status {res.status}"
     val = b @ res.x
     if val > -1e-9:
         return None, "no numeric ray (val %.3g)" % val
@@ -244,8 +310,17 @@ def farkas(rows, nv):
 
 
 def run_case(n, d, levels=1, do_milp=False):
+    """Worker function for case.
+    
+    Args:
+        n:
+        d:
+        levels (int):
+        do_milp (bool):
+    
+    """
     pr("=" * 72)
-    pr("hierarchy case (n=%d, d=%d, levels=%d)" % (n, d, levels))
+    pr(f"hierarchy case (n={n}, d={d}, levels={levels})")
     rows, nvars, master_b, cik = assemble(n, d, levels)
     pr("  variables:", nvars, " rows:", len(rows))
     pt, slack = feas_point(rows, nvars)
@@ -256,7 +331,7 @@ def run_case(n, d, levels=1, do_milp=False):
         for k in range(2, n + 1):
             c0, c = master_b[k]
             val = c0 + sum(x * y for x, y in zip(c, pt))
-            bk.append("b_%d=%s" % (k, val))
+            bk.append(f"b_{k}={val}")
         pr("  master level counts:", ", ".join(bk))
         if do_milp:
             pr("  (milp skipped)")

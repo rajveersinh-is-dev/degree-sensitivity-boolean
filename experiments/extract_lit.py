@@ -9,6 +9,9 @@ out = []
 
 
 def pr(*a):
+    """Pr.
+    
+    """
     out.append(" ".join(str(x) for x in a))
 
 
@@ -17,7 +20,7 @@ i = t.find("Fully Sensitive Function of Small Degree")
 if i < 0:
     i = t.find("fully sensitive function of small degree")
 pr("=" * 70)
-pr("PROSKURIN SECTION 5 (offset %d):" % i)
+pr(f"PROSKURIN SECTION 5 (offset {i}):")
 pr(t[i:i + 5000] if i >= 0 else "NOT FOUND")
 
 pr("=" * 70)
@@ -32,7 +35,7 @@ t2 = open(LIT + r"\lowdeg.txt", encoding="utf-8").read()
 pr("=" * 70)
 pr("lowdeg (arXiv 2107.11205): occurrences of '14' and key claims:")
 for pat in [r"\b14\b", r"[7-9] variables", r"sensitivity 7", r"seven"]:
-    pr("-- pattern %s:" % pat)
+    pr(f"-- pattern {pat}:")
     cnt = 0
     for m in re.finditer(pat, t2):
         s = max(0, m.start() - 120)

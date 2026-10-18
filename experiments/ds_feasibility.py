@@ -12,14 +12,17 @@ an integer linear program.  We solve it with OR-Tools CP-SAT.
 
 Reporting: for each (n, d) whether a solution exists (and one solution if so).
 """
-import sys
+from __future__ import annotations
+
 from itertools import combinations
+
 from ortools.sat.python import cp_model
+
 
 BOUND = 10**6
 
 
-def solve(n, d, time_limit=60.0, extra_sensitive=None):
+def solve(n, d, time_limit=60.0, extra_sensitive=None) -> tuple:
     """Return (status_name, coeffs) where coeffs is a dict keyed by frozenset.
 
     extra_sensitive: if not None, the set of indices forced sensitive; default = all of [n].
@@ -74,7 +77,7 @@ def solve(n, d, time_limit=60.0, extra_sensitive=None):
     return (name, None)
 
 
-def check(n, d, sol):
+def check(n, d, sol) -> tuple:
     """Verify the returned solution independently."""
     for size in range(0, n + 1):
         for S in combinations(range(n), size):

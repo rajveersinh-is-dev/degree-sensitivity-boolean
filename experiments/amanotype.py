@@ -52,18 +52,19 @@ Commands:
 
 Output is ASCII-only and written both to stdout and out file (utf-8).
 """
+from __future__ import annotations
+
 import sys
 import itertools
 from fractions import Fraction as Fr
 from math import comb
-from functools import reduce
 
 # ----------------------------------------------------------------------------
 # exact linear algebra helpers
 # ----------------------------------------------------------------------------
 
 
-def exact_solve(mat, rhs):
+def exact_solve(mat, rhs) -> tuple:
     """Solve square rational system A x = b (Gauss-Jordan). None if singular."""
     m = len(mat)
     A = [[Fr(x) for x in row] + [Fr(rhs[i])] for i, row in enumerate(mat)]
@@ -85,14 +86,24 @@ def exact_solve(mat, rhs):
     return tuple(A[i][m] / A[i][i] for i in range(m))
 
 
-def check_rows(rows, x):
+def check_rows(rows, x) -> bool:
+    """Check whether rows.
+    
+    Args:
+        rows:
+        x:
+    
+    Returns:
+        bool: Result of type bool
+    
+    """
     for (c, b) in rows:
         if sum(cc * xx for cc, xx in zip(c, x)) > b:
             return False
     return True
 
 
-def linprog_feasible(rows, nv):
+def linprog_feasible(rows, nv) -> tuple:
     """numeric feasibility check; returns True/False (None if undecided)."""
     import numpy as np
     from scipy.optimize import linprog
@@ -107,7 +118,7 @@ def linprog_feasible(rows, nv):
     return None, None
 
 
-def linprog_dir(rows, nv, cvec):
+def linprog_dir(rows, nv, cvec) -> tuple:
     """numeric min of cvec.x over {rows}; returns (status, value)."""
     import numpy as np
     from scipy.optimize import linprog
@@ -118,7 +129,7 @@ def linprog_dir(rows, nv, cvec):
     return res.status, res.fun, res.x
 
 
-def farkas_numeric_support(rows, nv):
+def farkas_numeric_support(rows, nv) -> tuple:
     """Find y >= 0 with A^T y = 0, b.y = -1 exactly (Farkas certificate of
     infeasibility).  Returns (y, b.y) or (None, reason)."""
     import numpy as np
@@ -158,7 +169,7 @@ def farkas_numeric_support(rows, nv):
             if ok and sum(Fr(b[j]) * y[j] for j in range(m)) < 0 and \
                     all(t >= 0 for t in y):
                 return y, None
-    return None, "no exact rational ray on support %s" % (list(dbl),)
+    return None, f"no exact rational ray on support {list(dbl)}"
 
 
 # ----------------------------------------------------------------------------
@@ -176,6 +187,14 @@ def base_rows(n, d, ranges=True):
         rows.append((tuple(row), Fr(1 - m)))                 # p~(m) <= 1
     if ranges:
         def box(idx, lo, hi):
+            """Box.
+            
+            Args:
+                idx:
+                lo:
+                hi:
+            
+            """
             r1 = [Fr(0)] * nv
             r1[idx] = Fr(1)
             rows.append((tuple(r1), Fr(hi)))
@@ -192,12 +211,12 @@ def base_rows(n, d, ranges=True):
     return rows
 
 
-def wvec(n, d, m):
+def wvec(n, d, m) -> tuple:
     """w_m = m + sum a_k C(m,k) as (constant, coeffs)."""
     return Fr(m), tuple(Fr(comb(m, k)) for k in range(2, d + 1))
 
 
-def enumerate_vertices(rows, nv):
+def enumerate_vertices(rows, nv) -> list:
     """All vertices of {A x <= b} (assumed bounded): exact, complete."""
     verts = {}
     R = len(rows)
@@ -213,12 +232,37 @@ def enumerate_vertices(rows, nv):
 
 
 def val_of_func(vt, cfun):
+    """Val of func.
+    
+    Args:
+        vt:
+        cfun:
+    
+    Returns:
+        The computed result
+    
+    """
     c0, cv = cfun
     return c0 + sum(a * b for a, b in zip(cv, vt))
 
 
-def geom(n, d, ranges=True, out=None):
+def geom(n, d, ranges=True, out=None) -> tuple:
+    """Geom.
+    
+    Args:
+        n:
+        d:
+        ranges (bool):
+        out:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     def pr(*a):
+        """Pr.
+        
+        """
         s = " ".join(str(x) for x in a)
         print(s)
         if out is not None:
@@ -227,7 +271,7 @@ def geom(n, d, ranges=True, out=None):
     nv = d - 1
     rows = base_rows(n, d, ranges)
     pr("=" * 72)
-    pr("GEOM n=%d d=%d ranges=%s  (#rows=%d)" % (n, d, ranges, len(rows)))
+    pr(f"GEOM n={n} d={d} ranges={ranges}  (#rows={len(rows)})")
 
     # boundedness diagnostics + numeric feasibility
     bounded = True
@@ -240,7 +284,7 @@ def geom(n, d, ranges=True, out=None):
                 bounded = False
                 pr("  numeric LP status %s for dir %+d*a_%d" % (st, sgn, i + 2))
     feas, xd = linprog_feasible(rows, nv)
-    pr("  numeric feasibility: %s ; bounded(dir-scan): %s" % (feas, bounded))
+    pr(f"  numeric feasibility: {feas} ; bounded(dir-scan): {bounded}")
 
     if feas is False:
         y, err = farkas_numeric_support(rows, nv)
@@ -258,7 +302,7 @@ def geom(n, d, ranges=True, out=None):
         return None
 
     verts = enumerate_vertices(rows, nv)
-    pr("  vertices: %d" % len(verts))
+    pr(f"  vertices: {len(verts)}")
     # dimension check: affine rank of vertices
     rank = 0
     if verts:
@@ -275,18 +319,18 @@ def geom(n, d, ranges=True, out=None):
                     break
             if piv is not None:
                 mat[rk], mat[piv] = mat[piv], mat[rk]
-                for r in range(len(mat)):
-                    if r != rk and mat[r][col] != 0:
-                        f = mat[r][col] / mat[rk][col]
+                for r, item in enumerate(mat):
+                    if r != rk and item[col] != 0:
+                        f = item[col] / mat[rk][col]
                         for k in range(col, nv):
-                            mat[r][k] -= f * mat[rk][k]
+                            item[k] -= f * mat[rk][k]
                 rk += 1
         rank = rk
     pr("  affine dimension (rank of vertex hull): %d (full = %d)" %
        (rank, nv))
     if len(verts) <= 8:
         for v in verts:
-            pr("    vertex a = (%s)" % ", ".join(str(z) for z in v))
+            pr(f'    vertex a = ({", ".join(...)})')
 
     # exact min/max of each a_k and w_m over the polytope (= over vertices)
     pr("  exact coordinate ranges over polytope:")
@@ -327,8 +371,8 @@ def geom(n, d, ranges=True, out=None):
                (m, "YES (Farkas)" if y is not None else "NO: " + str(err)))
     ones = sorted(m for m, v in forced.items() if v == 1)
     zeros = sorted(m for m, v in forced.items() if v == 0)
-    pr("  FORCED ONES: %s" % ones)
-    pr("  FORCED ZEROS: %s" % zeros)
+    pr(f"  FORCED ONES: {ones}")
+    pr(f"  FORCED ZEROS: {zeros}")
     return ("ok", verts, forced)
 
 
@@ -337,8 +381,25 @@ def geom(n, d, ranges=True, out=None):
 # ----------------------------------------------------------------------------
 
 
-def restrict_test(n, d, m0, forced, time_limit=600, out=None):
+def restrict_test(n, d, m0, forced, time_limit=600, out=None) -> tuple:
+    """Restrict test.
+    
+    Args:
+        n:
+        d:
+        m0:
+        forced:
+        time_limit (int):
+        out:
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     def pr(*a):
+        """Pr.
+        
+        """
         s = " ".join(str(x) for x in a)
         print(s)
         if out is not None:
@@ -346,35 +407,54 @@ def restrict_test(n, d, m0, forced, time_limit=600, out=None):
 
     from ortools.sat.python import cp_model
     pr("=" * 72)
-    pr("RESTRICT TEST n=%d d=%d m0=%d time=%ss" % (n, d, m0, time_limit))
+    pr(f"RESTRICT TEST n={n} d={d} m0={m0} time={time_limit}s")
 
     # forced equalities for the m0-subset: (level m, value v), 2 <= m <= m0
     fq = []
     for m, v in sorted(forced.items()):
         if 2 <= m <= m0 and v in (0, 1):
             fq.append((m, int(v)))
-    pr("  forced values on restriction: %s" % fq)
+    pr(f"  forced values on restriction: {fq}")
 
     # valid beta ranges
     def C(k):
+        """C.
+        
+        Args:
+            k:
+        
+        Returns:
+            The computed result
+        
+        """
         return comb(m0, k)
     rng = {2: (-2 * C(2), -1 * C(2)), 3: (0, 4 * C(3)), 4: (-14 * C(4), 9 * C(4)),
            5: (-80 * C(5), 86 * C(5))}
 
     # scale by D = lcm of C(m0,k), k=2..d
     def lcm(a, b):
+        """Lcm.
+        
+        Args:
+            a:
+            b:
+        
+        Returns:
+            The computed result
+        
+        """
         from math import gcd
         return a * b // gcd(a, b)
     D = 1
     for k in range(2, d + 1):
         D = lcm(D, C(k) if k <= m0 else 1)
-    pr("  scale D = %d" % D)
+    pr(f"  scale D = {D}")
 
     model = cp_model.CpModel()
     beta = {}
     for k in range(2, d + 1):
         lo, hi = rng.get(k, (-10 ** 12, 10 ** 12))
-        beta[k] = model.NewIntVar(int(lo), int(hi), "beta_%d" % k)
+        beta[k] = model.NewIntVar(int(lo), int(hi), f"beta_{k}")
     for m in range(2, m0 + 1):
         terms = []
         for k in range(2, min(d, m) + 1):
@@ -394,10 +474,10 @@ def restrict_test(n, d, m0, forced, time_limit=600, out=None):
     solver.parameters.max_time_in_seconds = time_limit
     solver.parameters.num_workers = 4
     st = solver.Solve(model)
-    pr("  CP-SAT status: %s" % solver.StatusName(st))
+    pr(f"  CP-SAT status: {solver.StatusName(st)}")
     if st in (cp_model.OPTIMAL, cp_model.FEASIBLE):
         sol = [solver.Value(beta[k]) for k in range(2, d + 1)]
-        pr("  solution beta = alpha' = %s" % sol)
+        pr(f"  solution beta = alpha' = {sol}")
         # cross-check rational feasibility exactly
         ok = True
         for m in range(2, m0 + 1):
@@ -405,7 +485,7 @@ def restrict_test(n, d, m0, forced, time_limit=600, out=None):
                               for k in range(2, min(d, m) + 1))
             if val < 0 or val > 1:
                 ok = False
-        pr("  exact check of found solution: %s" % ok)
+        pr(f"  exact check of found solution: {ok}")
         return ("SAT", sol)
     if st == cp_model.INFEASIBLE:
         pr("  => restriction integrality INFEASIBLE (computer proof; "
@@ -427,7 +507,8 @@ if __name__ == "__main__":
             n, d, m0 = int(args[1]), int(args[2]), int(args[3])
             ranges = ("noranges" not in args)
             tl = 600
-            for a in args[4:]:
+            for a in args[4:
+                ]:
                 if a.isdigit():
                     tl = int(a)
             res = geom(n, d, ranges, out)

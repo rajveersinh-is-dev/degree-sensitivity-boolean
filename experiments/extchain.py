@@ -27,17 +27,21 @@ Usage:
 SAT => writes the (k+1,d) y-values to experiments/ksol_e<k+1>_<d><tag>.json
 after independent verification (ksearch.verify).
 """
+from __future__ import annotations
+
+from itertools import combinations
 import json
 import os
 import sys
 import time
-from itertools import combinations
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from ortools.sat.python import cp_model
 import ksearch
 import ksearch2
 
-from ortools.sat.python import cp_model
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 
 
 def g_values_from_y(k, d, yvals):
@@ -79,7 +83,19 @@ def u_degree_constraints(model, u, k, d):
             model.Add(sum(terms) == 0)
 
 
-def build_fixed(k, d, g, log=False):
+def build_fixed(k, d, g, log=False) -> tuple:
+    """Create fixed.
+    
+    Args:
+        k:
+        d:
+        g:
+        log (bool):
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     model = cp_model.CpModel()
     u = {}
     for m in range(0, k + 1):
@@ -93,7 +109,18 @@ def build_fixed(k, d, g, log=False):
     return model, u
 
 
-def build_full(k, d, log=False):
+def build_full(k, d, log=False) -> tuple:
+    """Create full.
+    
+    Args:
+        k:
+        d:
+        log (bool):
+    
+    Returns:
+        tuple: Result of type tuple
+    
+    """
     bounds, verts = ksearch2.level_bounds(k, d, verbose=log)
     model, y, fvars = ksearch2.build2(k, d, bounds)
     u = {}
@@ -194,7 +221,7 @@ if __name__ == "__main__":
                 model.add_hint(v, gvals[A])
             for T, v in u.items():
                 model.add_hint(v, gvals[T])
-        print("hint applied from %s (d_old=%d)" % (hint_path, d_old), flush=True)
+        print(f"hint applied from {hint_path} (d_old={d_old})", flush=True)
     st = solver.Solve(model)
     name = solver.StatusName(st)
     print("k=%d d=%d status=%s wall=%.1f (extchain%s)"
@@ -214,7 +241,7 @@ if __name__ == "__main__":
             ysol = extract(k, d, g, uvals)
         ok, err = ksearch.verify(k + 1, d, ysol)
         print("independent verification:", "OK" if ok else err, flush=True)
-        fn = "experiments/ksol_e%d_%d%s.json" % (k + 1, d, tag)
+        fn = f"experiments/ksol_e{k + 1}_{d}{tag}.json"
         with open(fn, "w") as fh:
             json.dump({",".join(map(str, sorted(B))): v
                        for B, v in ysol.items()}, fh)

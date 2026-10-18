@@ -26,8 +26,9 @@ This script:
     using scipy's MILP on the same system (floating point, cross-checked).
 Output is written to a UTF-8 file (Windows console is cp1252).
 """
+from __future__ import annotations
+
 from fractions import Fraction as Fr
-from itertools import combinations
 from math import comb
 import sys
 
@@ -35,12 +36,16 @@ OUT = []
 
 
 def pr(*a):
+    """Pr.
+    
+    """
     OUT.append(" ".join(str(x) for x in a))
 
 
 # ---------- exact LP construction ----------
 
-def build_system(n, d):
+
+def build_system(n, d) -> tuple:
     """Variables x_i = w_{2+i}, i=0..d-2 (i.e. w_2..w_d).
     Rows: (coeffs tuple, rhs, sense) meaning  sum coeffs*x <= rhs  (sense '<=')
     representing 0 <= w_m <= 1 for m = 2..n, where w_m for m > d is the affine
@@ -79,7 +84,7 @@ def build_system(n, d):
     return rows, aff
 
 
-def fourier_motzkin(rows):
+def fourier_motzkin(rows) -> tuple:
     """Exact FM elimination. rows: list of (coeff tuple, rhs) for coeff*x <= rhs.
     Returns (feasible: bool, new_rows).  Variables eliminated left to right.
     Returns also a witness point if feasible (back-substitution is not done here)."""
@@ -132,7 +137,7 @@ def fourier_motzkin(rows):
             rows2.append((c, b))
         rows = rows2
         if len(rows) > 40000:
-            raise RuntimeError("FM blowup at variable %d: %d rows" % (j, len(rows)))
+            raise RuntimeError(f"FM blowup at variable {j}: {len(rows)} rows")
     for (c, b) in rows:
         if b < 0:
             return False, None
@@ -140,12 +145,22 @@ def fourier_motzkin(rows):
 
 
 def gcd(a, b):
+    """Gcd.
+    
+    Args:
+        a:
+        b:
+    
+    Returns:
+        The computed result
+    
+    """
     while b:
         a, b = b, a % b
     return a
 
 
-def vertices_and_point(n, d):
+def vertices_and_point(n, d) -> tuple:
     """Numerically find vertices of LP(n,d), then verify exactly."""
     import numpy as np
     from scipy.optimize import linprog
@@ -156,7 +171,6 @@ def vertices_and_point(n, d):
     pts = []
     # vertex enumeration: for each subset of nv constraints, solve equality system
     from itertools import combinations as C
-    import itertools
     idx = range(len(rows))
     checked = 0
     for sub in C(idx, nv):
@@ -179,13 +193,33 @@ def vertices_and_point(n, d):
     return rows, aff, pts
 
 
-def exact_check(rows, sol):
+def exact_check(rows, sol) -> bool:
+    """Exact check.
+    
+    Args:
+        rows:
+        sol:
+    
+    Returns:
+        bool: Result of type bool
+    
+    """
     import numpy as np
     return bool(np.all(np.array([[float(z) for z in c] for (c, _) in rows]) @ sol
                        <= np.array([float(x) for (_, x) in rows]) + 1e-7))
 
 
-def exact_check_rows(rows, fr):
+def exact_check_rows(rows, fr) -> bool:
+    """Exact check rows.
+    
+    Args:
+        rows:
+        fr:
+    
+    Returns:
+        bool: Result of type bool
+    
+    """
     for (c, b) in rows:
         s = sum(cc * x for cc, x in zip(c, fr))
         if s > b:
@@ -194,8 +228,16 @@ def exact_check_rows(rows, fr):
 
 
 def run_case(n, d, do_milp=True):
+    """Worker function for case.
+    
+    Args:
+        n:
+        d:
+        do_milp (bool):
+    
+    """
     pr("=" * 70)
-    pr("case (n=%d, d=%d)" % (n, d))
+    pr(f"case (n={n}, d={d})")
     rows, aff = build_system(n, d)
     feas, res = fourier_motzkin(rows)
     pr("  LP feasibility (exact FM):", "FEASIBLE" if feas else "INFEASIBLE")
@@ -220,8 +262,8 @@ def run_case(n, d, do_milp=True):
             for m in range(2, n + 1):
                 c0, v = aff[m]
                 w[m] = c0 + sum(a * b for a, b in zip(v, pt))
-            pr("  implied w_k =", ", ".join("w_%d=%s" % (k, w[k]) for k in range(2, n + 1)))
-            pr("  implied b_k =", ", ".join("b_%d=%s" % (k, w[k] * comb(n, k))
+            pr("  implied w_k =", ", ".join(f"w_{k}={...}" for k in range(2, n + 1)))
+            pr("  implied b_k =", ", ".join(f"b_{k}={... * comb(n, k)}"
                                             for k in range(2, n + 1)))
         if do_milp:
             milp_integrality(n, d, rows, aff)
@@ -262,7 +304,7 @@ def milp_integrality(n, d, rows, aff):
        "(0=feasible, 2=infeasible, other=unknown)")
     if res.status == 0:
         pr("    integer b_k:", ", ".join(
-            "b_%d=%d" % (k, round(res.x[nv + (k - d - 1)])) for k in range(d + 1, n + 1)))
+            f"b_{k}={round(...)}" for k in range(d + 1, n + 1)))
 
 
 if __name__ == "__main__":

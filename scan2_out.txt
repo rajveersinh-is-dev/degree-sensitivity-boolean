@@ -1,0 +1,6 @@
+d= 2 n_min=  4  [n=d..n_min] FFI   INFEASIBLE at: [4]
+      (n=4) EXACT FARKAS CERT: 2 nonzeros, b.y=-1
+d= 3 n_min=  7  [n=d..n_min] FFFFI   INFEASIBLE at: [7]
+      (n=7) EXACT FARKAS CERT: 3 nonzeros, b.y=-1
+d= 4 n_min= 10  [n=d..n_min] FFFFFFF   INFEASIBLE at: []
+d= 5 n_min= 14  [n=d..n_min] FFFFFFFFFF   INFEASIBLE at: []

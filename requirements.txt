@@ -1,0 +1,4 @@
+ortools
+scipy
+numpy
+python-sat

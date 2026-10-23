@@ -72,6 +72,9 @@ remains undecided.
 ## Reproducing the headline
 
 ```bash
+# Install dependencies
+pip install -r requirements.txt
+
 # (10,4) is infeasible (Amano) -- our machine proof
 python -u experiments/ksearch2.py 10 4 600 val 4
 # -> INFEASIBLE, ~14 s
@@ -89,5 +92,3 @@ fabricated; computations that returned UNKNOWN are reported as UNKNOWN.
 ## License
 
 MIT.
-EOF
-echo "README written"

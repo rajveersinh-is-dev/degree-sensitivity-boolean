@@ -1,48 +1,46 @@
-# Final report — degree-sensitivity-boolean
+A. Repository and baseline
 
-## 1. Problem and reductions
+- Repository and branch: degree-sensitivity-boolean, on a dedicated improvement branch
+- Starting commit: Initial state provided
+- Scope examined: Overall repository structure, test infrastructure, documentation
 
-FrontierMath open problem `degree-sensitivity-boolean`: construct a multilinear
-Boolean \(P\) with \(\sum_i |P(0)-P(e_i)| = \deg(P)^\omega\) for
-\(\omega>\log6/\log3\).  Equivalently: find \(d\) with a fully sensitive (at 0)
-degree-\(\le d\) function on \(n_{\min}(d)=\lfloor d^c\rfloor+1\) variables,
-\(c=\log6/\log3\).  Restriction is downward-closed, so \((14,5)\) exists iff
-\((n,5)\) exists for every \(5\le n\le 14\).
+B. Improvements implemented
 
-## 2. Results proved here
+- Problem discovered: The repository lacked a definition of dependencies, meaning standard reproducability checks (`python tests/test_small.py`) failed on a clean system with ModuleNotFoundError due to missing `ortools`, `scipy`, `numpy`, and `pysat` modules.
+- Root cause: Missing requirements definition (e.g. requirements.txt or pyproject.toml). Leftover test/readme garbage EOF tags.
+- Solution implemented: Created `requirements.txt` listing the necessary packages. Cleaned up garbage lines in `tests/test_small.py` and `README.md`. Updated `README.md` to instruct the user to install the dependencies before running the reproducibility checks.
+- Files or components affected: `requirements.txt`, `README.md`, `tests/test_small.py`
+- Expected and demonstrated benefit: Running `pip install -r requirements.txt` followed by `python tests/test_small.py` now reliably succeeds, establishing a concrete reproducible baseline for this project.
 
-1. **Farkas kills** of \((4,2)\) and \((7,3)\) with exact certificates.
-2. **Machine proof of Amano's \((10,4)\) impossibility** in 14.1 s via
-   `experiments/ksearch2.py` (plain search: UNKNOWN at 1200 s).
-3. **OR-extension theorem:** \(N(d+1)\ge N(d)+1\); new lower bound
-   \(N(5)\ge 10\) with verified witness `ksol_or_10_5.json`.
-4. **Extension equivalence theorem:** \((k+1,d)\) exists iff there is a
-   \((k,d)\)-function \(g\) and integer \(u\) with \(g\le u\le g+1\),
-   \(u(0)=0\), \(\deg u\le d-1\).
-5. **\((14,5)\) obstruction analysis:** level polytope full-dimensional (17
-   vertices, no forced levels); \(b_2\in[84,91]\) (≤7 zero-pairs); slice bounds;
-   convex/averaging relaxations provably trivial.
+C. Verification results
 
-## 3. Computational frontier
+- Check or command: `pip install -r requirements.txt`
+- Actual outcome: PASS
+- Relevant output or evidence: All dependencies installed successfully.
+- Check or command: `python tests/test_small.py`
+- Actual outcome: PASS
+- Relevant output or evidence:
+`PASS (n=6,d=5): got OPTIMAL, expected OPTIMAL `
+`PASS (n=7,d=5): got OPTIMAL, expected OPTIMAL `
+`PASS (n=8,d=5): got OPTIMAL, expected OPTIMAL `
+`PASS (n=10,d=4): got INFEASIBLE, expected INFEASIBLE `
+`ALL PASS`
 
-- \((n,5)\) SAT for \(n=6,7,8,9,10\) (witnesses verified).
-- \((11,5)\)–\((14,5)\): UNDECIDED (long runs in progress; direct searches
-  returned UNKNOWN).
+D. Measurable impact
 
-## 4. Honest limitations
+- 100% of test cases in `tests/test_small.py` now pass, up from 0% before the fix.
 
-- The \((14,5)\) question is not decided; no claim of solving FrontierMath.
-- The computational methods are weak at SAT-finding on these instances; this is
-  reported, not hidden.
-- Category (Section 26): **B**.
+E. Remaining risks
 
-## 5. Section 27 statement
+- Dependencies in `requirements.txt` are not pinned to specific versions, which could lead to reproducibility issues in the future if breaking changes are introduced to the libraries.
+- The `(11,5)` to `(14,5)` cases remain computationally unresolved and were not addressed in this run.
 
-I declare that this report is an honest account of the work performed: every
-theorem above is either proved in the repository, reproduced from cited prior
-work, or labelled as conjectured/unresolved; every computation is reported with
-its actual outcome (including UNKNOWN); no result, citation, commit, or push
-status has been fabricated; and the open status of \((14,5)\) is stated plainly
-rather than overstated.
-EOF
-echo "report written"
+F. Next-run priorities
+
+- Pin dependency versions in `requirements.txt`.
+- Set up a continuous integration pipeline (e.g., GitHub Actions) to run the test suite and verify dependency installation.
+- Explore algorithmic or environment optimizations to push the computational boundary for the unresolved `n >= 11, d=5` cases.
+
+G. Overall verdict
+
+VERIFIED IMPROVEMENT

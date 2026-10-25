@@ -8,7 +8,8 @@ degree-d case of the FrontierMath problem is dead.
 Prints a matrix; for infeasible entries tries an exact Farkas certificate.
 """
 import sys
-sys.path.insert(0, r"C:\Users\davea\Downloads\newp\experiments")
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import amanotype as AT
 from decimal import Decimal, getcontext
 

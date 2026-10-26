@@ -36,6 +36,20 @@ def main():
     for n, d, expected in cases:
         st, out = run(n, d)
         good = (st == expected)
+
+        # If we expect a solution, ensure it passes independent verification (Boolean/degree checks)
+        if expected == "OPTIMAL" and good:
+            verif_ok = False
+            for line in out.splitlines():
+                if line.startswith("independent verification:"):
+                    if "OK" in line:
+                        verif_ok = True
+                    break
+            if not verif_ok:
+                good = False
+                print("FAIL verification for (n=%d,d=%d). Output:" % (n, d))
+                print(out[-500:])
+
         ok = ok and good
         print("%s (n=%d,d=%d): got %s, expected %s %s"
               % ("PASS" if good else "FAIL", n, d, st, expected,

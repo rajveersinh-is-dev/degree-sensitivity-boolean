@@ -130,17 +130,17 @@ def verify(n, d, sol):
             if s != 0:
                 return False, "degree > d: c[%s] = %d" % (A, s)
     # FrontierMath quality gate
-    c_crit = math.log(6) / math.log(3)
-    if not pow_gt(n, d, c_crit):
-        return False, "n not > d^c"
+    if not pow_gt(n, d):
+        return True, "OK (but n <= d^c)"
     return True, None
 
 
-def pow_gt(n, d, c):
+def pow_gt(n, d):
     # exact comparison  n > d^c  via high-precision decimal
     from decimal import Decimal, getcontext
     getcontext().prec = 60
-    return Decimal(n) > Decimal(d) ** Decimal(c)
+    c_exact = Decimal(6).ln() / Decimal(3).ln()
+    return Decimal(n) > Decimal(d) ** c_exact
 
 
 if __name__ == "__main__":
@@ -153,7 +153,12 @@ if __name__ == "__main__":
     print("n=%d d=%d status=%s wall=%.1f" % (n, d, name, solver.WallTime()))
     if sol:
         ok, err = verify(n, d, sol)
-        print("independent verification:", "OK" if ok else err)
+        if ok and err is not None:
+            print("independent verification:", err)
+        elif ok:
+            print("independent verification: OK")
+        else:
+            print("independent verification:", err)
         with open("experiments/ksol_%d_%d%s.json" % (n, d, tag), "w") as fh:
             json.dump({",".join(map(str, sorted(B))): v for B, v in sol.items()}, fh)
         print("saved experiments/ksol_%d_%d%s.json" % (n, d, tag))

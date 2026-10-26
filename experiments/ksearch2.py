@@ -142,7 +142,12 @@ if __name__ == "__main__":
     if name in ("OPTIMAL", "FEASIBLE"):
         sol = {B: solver.Value(v) for B, v in y.items()}
         ok, err = ksearch.verify(n, d, sol)
-        print("independent verification:", "OK" if ok else err)
+        if ok and err is not None:
+            print("independent verification:", err)
+        elif ok:
+            print("independent verification: OK")
+        else:
+            print("independent verification:", err)
         with open("experiments/ksol2_%d_%d%s.json" % (n, d, tag), "w") as fh:
             json.dump({",".join(map(str, sorted(B))): v for B, v in sol.items()},
                       fh)

@@ -29,8 +29,10 @@ We probe n_LP(d) for small d by LP.
 from math import comb, log
 import numpy as np
 from scipy.optimize import linprog
+from decimal import Decimal, getcontext
 
-C_CRIT = log(6.0) / log(3.0)   # 1.6309297535714574
+getcontext().prec = 60
+C_CRIT = Decimal(6).ln() / Decimal(3).ln()
 
 
 def lp_feasible(n: int, d: int):
@@ -72,10 +74,10 @@ if __name__ == "__main__":
     out.append(f"{'d':>3} {'n_LP(d)':>8} {'d^c':>9} {'need n>=':>9} {'verdict':>8}")
     for d in range(2, 33):
         mx, firstbad = n_lp(d, nmax=400)
-        dс = d ** C_CRIT
-        need = int(dс) + 1
+        dc = Decimal(d) ** C_CRIT
+        need = int(dc) + 1
         verdict = "KILLED" if (mx is not None and mx < need) else "OPEN"
-        out.append(f"{d:>3} {str(mx):>8} {dс:>9.3f} {need:>9} {verdict:>8}")
+        out.append(f"{d:>3} {str(mx):>8} {float(dc):>9.3f} {need:>9} {verdict:>8}")
     text = "\n".join(out)
     print(text)
     with open("level_lp_out.txt", "w", encoding="utf-8") as fh:

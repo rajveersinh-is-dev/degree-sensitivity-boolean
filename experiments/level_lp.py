@@ -29,10 +29,7 @@ We probe n_LP(d) for small d by LP.
 from math import comb, log
 import numpy as np
 from scipy.optimize import linprog
-from decimal import Decimal, getcontext
-
-getcontext().prec = 60
-C_CRIT = Decimal(6).ln() / Decimal(3).ln()
+from exponent_math import C_CRIT, Decimal
 
 
 def lp_feasible(n: int, d: int):

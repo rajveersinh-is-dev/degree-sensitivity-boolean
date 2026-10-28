@@ -54,6 +54,31 @@ def main():
         print("%s (n=%d,d=%d): got %s, expected %s %s"
               % ("PASS" if good else "FAIL", n, d, st, expected,
                  "" if good else "\n" + out[-500:]))
+
+    # Mathematical tests for exponent bounds (issue robustness)
+    sys.path.insert(0, os.path.join(ROOT, "experiments"))
+    from exponent_math import pow_gt
+
+    # 3^c is exactly 6.000 (when using precise bounds), so pow_gt(6, 3) must be False, and pow_gt(7, 3) True
+    math_cases = [
+        (6, 3, False),
+        (7, 3, True),
+        (4, 2, True),
+        (3, 2, False),
+        (10, 4, True),
+        (9, 4, False)
+    ]
+    math_ok = True
+    for n, d, expected in math_cases:
+        res = pow_gt(n, d)
+        if res != expected:
+            print("FAIL pow_gt(n=%d, d=%d): got %s, expected %s" % (n, d, res, expected))
+            math_ok = False
+        else:
+            print("PASS pow_gt(n=%d, d=%d)" % (n, d))
+
+    ok = ok and math_ok
+
     print("ALL PASS" if ok else "SOME FAILED")
     sys.exit(0 if ok else 1)
 

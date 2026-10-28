@@ -14,20 +14,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import amanotype as AT
-from decimal import Decimal, getcontext
-
-getcontext().prec = 80
-C = Decimal(6).ln() / Decimal(3).ln()
-
-
-def nmin(d):
-    x = Decimal(d) ** C
-    n = int(x) + 1
-    while Decimal(n) <= x:
-        n += 1
-    while Decimal(n - 1) > x:
-        n -= 1
-    return n, x
+from exponent_math import nmin
 
 
 def main():

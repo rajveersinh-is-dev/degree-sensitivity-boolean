@@ -130,17 +130,10 @@ def verify(n, d, sol):
             if s != 0:
                 return False, "degree > d: c[%s] = %d" % (A, s)
     # FrontierMath quality gate
+    from exponent_math import pow_gt
     if not pow_gt(n, d):
         return True, "OK (but n <= d^c)"
     return True, None
-
-
-def pow_gt(n, d):
-    # exact comparison  n > d^c  via high-precision decimal
-    from decimal import Decimal, getcontext
-    getcontext().prec = 60
-    c_exact = Decimal(6).ln() / Decimal(3).ln()
-    return Decimal(n) > Decimal(d) ** c_exact
 
 
 if __name__ == "__main__":

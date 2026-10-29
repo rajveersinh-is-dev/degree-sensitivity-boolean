@@ -103,6 +103,8 @@ def linprog_feasible(rows, nv):
     if res.status == 0:
         return True, res.x
     if res.status == 2:
+        if "Model error" in getattr(res, 'message', ''):
+            return None, None
         return False, None
     return None, None
 
@@ -115,7 +117,7 @@ def linprog_dir(rows, nv, cvec):
     b = np.array([float(x) for (c, x) in rows])
     res = linprog(c=[float(z) for z in cvec], A_ub=A, b_ub=b,
                   bounds=[(None, None)] * nv, method="highs")
-    return res.status, res.fun, res.x
+    return res.status, res.fun if getattr(res, 'fun', None) is not None else float('nan'), res.x if getattr(res, 'x', None) is not None else None
 
 
 def farkas_numeric_support(rows, nv):
@@ -131,9 +133,9 @@ def farkas_numeric_support(rows, nv):
     beq[-1] = 1.0
     res = linprog(c=b, A_eq=Aeq, b_eq=beq, bounds=[(0, None)] * m,
                   method="highs")
-    if res.status != 0 or b @ res.x > -1e-9:
+    if res.status != 0 or getattr(res, 'x', None) is None or b @ res.x > -1e-9:
         return None, "no numeric ray (status %s val %.3g)" % (res.status,
-                                                              b @ res.x)
+                                                              b @ res.x if getattr(res, 'x', None) is not None else float('nan'))
     dbl = np.where(np.abs(res.x) > 1e-7)[0]
     sup = list(dbl)
     if len(sup) < nv + 1:

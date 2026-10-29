@@ -2,36 +2,35 @@ FINAL REPORT
 
 A. Repository and baseline
 - Repository: degree-sensitivity-boolean
-- Branch: jules-6307820464392629802-b18bb73f
+- Branch: jules-2608941107094228634-cab4211d
 - Starting commit: Initial state at run start.
-- Scope examined: Evaluated execution precision of FrontierMath bounds specifically `log(6)/log(3)` and the exact calculations of `$d^c$` in `experiments/level_lp.py`.
+- Scope examined: Explored `experiments/amanotype.py` robustness when running the mathematical verification via `scipy.optimize.linprog` for higher dimensions, finding it throws exceptions instead of failing gracefully.
 
 B. Improvements implemented
-- Problem discovered: Using `math.log` to define `C_CRIT = log(6.0)/log(3.0)` caused floating-point underflow errors such as `$3^{\log_3 6}$` evaluating to `5.999999999999999`. A Cyrillic `с` homoglyph was also used for `dс` making it susceptible to typos. Because of the precision issue, `need n>=` was calculated as `6` instead of `7` when $d=3$.
-- Root cause: Standard `float64` imprecision causing edge-case integer comparisons to fail.
-- Solution implemented: Replaced `float64` math with arbitrary precision using Python's `decimal` module, configuring 60 digits of precision. Computed `C_CRIT = Decimal(6).ln() / Decimal(3).ln()` and extracted bounds safely. Cleaned up the homoglyph.
-- Files or components affected: `experiments/level_lp.py`
-- Expected and demonstrated benefit: Ensures absolute integrity for the Kushilevitz exponent calculation. Running it establishes that `need` correctly identifies the exact needed `n` without underestimating due to precision issues (e.g., correctly showing `KILLED` for $d=3$ with `need n>=7`).
+- Problem discovered: The `experiments/scan_level_d.py` script crashed for `d=15` due to `scipy.optimize.linprog` returning a HiGHS Model Error (`status = 2`). Because the mathematical formulation for higher levels results in combination sizes like `math.comb(83, 40)` that can create massively unscaled coefficients (e.g. `1e16`), `linprog` exits correctly without assigning `res.x`. Consequently, calculations expecting `res.x` to be a vector (such as `b @ res.x`) throw `ValueError`. In addition, `linprog_feasible` erroneously treated any `status == 2` result as definitively "infeasible" instead of "failed to solve numerically", preventing the script from correctly surfacing mathematically indeterminate states due to numerical constraints.
+- Root cause: Missing safeguards around `scipy.optimize.linprog` return states, assuming that any status failure still contains a valid `.x` matrix, or assuming that `status == 2` universally maps to mathematical infeasibility when using the Highs solver.
+- Solution implemented: Replaced direct accesses of `res.x` and `res.fun` in `linprog_feasible`, `linprog_dir`, and `farkas_numeric_support` in `experiments/amanotype.py` with defensive usage like `getattr(res, 'x', None)`. Implemented checks in `linprog_feasible` to inspect `res.message` to accurately distinguish a "Model error" (undecided) from true feasibility logic (returning `None, None`).
+- Files or components affected: `experiments/amanotype.py`
+- Expected and demonstrated benefit: Ensures absolute structural stability for large configuration `d` searches. Prevents script crashes when matrices become poorly scaled, properly surfacing `feasible=None` when the model errors out natively.
 
 C. Verification results
 
 | Check or command | Actual outcome | Relevant output or evidence | Explanation of limitation |
 | :--- | :--- | :--- | :--- |
-| `python experiments/level_lp.py` | PASS | See `level_lp_out.txt` showing `7` for $d=3$. | Local verification. |
+| `python experiments/scan_level_d.py 15` | PASS | Script evaluates through `d=15` returning `feasible=None` without exception. | Local verification. |
 | `python tests/test_small.py` | PASS | `ALL PASS` for core tests. | Local verification. |
-| `git status` | PASS | Only `experiments/level_lp.py` is modified and staged. | Local verification. |
+| `git status` | PASS | Removed testing artifacts. | Local verification. |
 
 D. Measurable impact
-Before: `python experiments/level_lp.py` printed `3 6 6.000 6 OPEN` for $d=3$.
-After: It prints `3 6 6.000 7 KILLED` for $d=3$, properly determining that $6 < 7$ kills the exponent viability for $n=6, d=3$.
+Before: `python experiments/scan_level_d.py 15` crashed with `ValueError: matmul: Input operand 1 does not have enough dimensions`.
+After: It successfully continues processing and correctly prints `d=15 n_min= 83  d^c=82.8175211537761530757  feasible=None`.
 
 E. Remaining risks
-The other files inside `experiments` also calculate `C = Decimal(6).ln() / Decimal(3).ln()`, which might need 60 precisions explicitly set across the board (like in `scan_level_d.py` where it sets 80). Further inspection could synchronize the precisions identically if necessary.
+The solver currently yields "Model error" due to scaling and cannot evaluate large degrees like `d=15`. It might be possible to rescale the matrix by powers of 10 prior to linear programming constraints without altering mathematical invariants, restoring explicit Farkas verification.
 
 F. Next-run priorities
-1. Synchronize the `decimal.getcontext().prec` across all scripts defining `C_CRIT` to an agreed upon value (e.g. 60 or 80) in a centralized utility to prevent mismatches.
-2. Extend `test_small.py` with rigorous mathematical tests testing the exponent explicitly with varying `n` and `d` variables to guarantee floating-point regressions do not occur in CI.
-3. Review `amanotype.py` for similar precision bounds in `Fraction` usage.
+1. Research strategies for better `linprog` matrix scaling within `amanotype.py` to overcome HiGHS `Model error` limitations for values beyond `d=14`.
+2. Determine if the Fraction-based exhaustive Farkas verification loops can replace numerical LP where feasible for specific constraints.
 
 G. Overall verdict
 VERIFIED IMPROVEMENT

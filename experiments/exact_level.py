@@ -206,7 +206,9 @@ def run_case(n, d, do_milp=True):
         nv = d - 1
         A = np.array([[float(z) for z in c] for (c, b) in rows])
         b = np.array([float(x) for (_, x) in rows])
-        r = linprog(c=np.zeros(nv), A_ub=A, b_ub=b, bounds=[(None, None)] * nv,
+        row_norms = np.abs(A).max(axis=1)
+        row_norms[row_norms == 0] = 1.0
+        r = linprog(c=np.zeros(nv), A_ub=A / row_norms[:, np.newaxis], b_ub=b / row_norms, bounds=[(None, None)] * nv,
                     method="highs")
         pt = None
         if r.status == 0:

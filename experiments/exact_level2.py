@@ -90,7 +90,9 @@ def feas_point(rows, nv):
     b = np.array([float(x) for (c, x) in rows])
     # maximin slack:  A x + t <= b,  maximize t
     A2 = np.hstack([A, np.ones((A.shape[0], 1))])
-    res = linprog(c=np.array([0.0] * nv + [-1.0]), A_ub=A2, b_ub=b,
+    row_norms = np.abs(A2).max(axis=1)
+    row_norms[row_norms == 0] = 1.0
+    res = linprog(c=np.array([0.0] * nv + [-1.0]), A_ub=A2 / row_norms[:, np.newaxis], b_ub=b / row_norms,
                   bounds=[(None, None)] * nv + [(None, None)], method="highs")
     if res.status == 0 and res.x[nv] > 0:
         pt = rat(res.x[:nv])
@@ -102,7 +104,10 @@ def feas_point(rows, nv):
             if check_rows(rows, pt):
                 return pt, res.x[nv]
     # plain feasibility
-    res = linprog(c=np.zeros(nv), A_ub=A, b_ub=b, bounds=[(None, None)] * nv,
+
+    row_norms = np.abs(A).max(axis=1)
+    row_norms[row_norms == 0] = 1.0
+    res = linprog(c=np.zeros(nv), A_ub=A / row_norms[:, np.newaxis], b_ub=b / row_norms, bounds=[(None, None)] * nv,
                   method="highs")
     if res.status == 0:
         pt = rat(res.x[:nv])
@@ -121,7 +126,9 @@ def farkas(rows, nv):
     Aeq = np.vstack([A.T, np.ones((1, m))])
     beq = np.zeros(nv + 1)
     beq[-1] = 1.0
-    res = linprog(c=b, A_eq=Aeq, b_eq=beq, bounds=[(0, None)] * m, method="highs")
+    row_norms = np.abs(Aeq).max(axis=1)
+    row_norms[row_norms == 0] = 1.0
+    res = linprog(c=b, A_eq=Aeq / row_norms[:, np.newaxis], b_eq=beq / row_norms, bounds=[(0, None)] * m, method="highs")
     if res.status != 0 or b @ res.x > -1e-9:
         return None, "no numeric ray (status %s, val %.3g)" % (res.status, b @ res.x)
     dbl = np.where(np.abs(res.x) > 1e-7)[0]

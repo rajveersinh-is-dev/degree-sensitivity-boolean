@@ -98,7 +98,10 @@ def linprog_feasible(rows, nv):
     from scipy.optimize import linprog
     A = np.array([[float(z) for z in c] for (c, b) in rows])
     b = np.array([float(x) for (c, x) in rows])
-    res = linprog(c=[0.0] * nv, A_ub=A, b_ub=b,
+
+    row_norms = np.abs(A).max(axis=1)
+    row_norms[row_norms == 0] = 1.0
+    res = linprog(c=[0.0] * nv, A_ub=A / row_norms[:, np.newaxis], b_ub=b / row_norms,
                   bounds=[(None, None)] * nv, method="highs")
     if res.status == 0:
         return True, res.x
@@ -115,7 +118,10 @@ def linprog_dir(rows, nv, cvec):
     from scipy.optimize import linprog
     A = np.array([[float(z) for z in c] for (c, b) in rows])
     b = np.array([float(x) for (c, x) in rows])
-    res = linprog(c=[float(z) for z in cvec], A_ub=A, b_ub=b,
+
+    row_norms = np.abs(A).max(axis=1)
+    row_norms[row_norms == 0] = 1.0
+    res = linprog(c=[float(z) for z in cvec], A_ub=A / row_norms[:, np.newaxis], b_ub=b / row_norms,
                   bounds=[(None, None)] * nv, method="highs")
     return res.status, res.fun if getattr(res, 'fun', None) is not None else float('nan'), res.x if getattr(res, 'x', None) is not None else None
 
@@ -131,7 +137,10 @@ def farkas_numeric_support(rows, nv):
     Aeq = np.vstack([A.T, np.ones((1, m))])
     beq = np.zeros(nv + 1)
     beq[-1] = 1.0
-    res = linprog(c=b, A_eq=Aeq, b_eq=beq, bounds=[(0, None)] * m,
+
+    row_norms = np.abs(Aeq).max(axis=1)
+    row_norms[row_norms == 0] = 1.0
+    res = linprog(c=b, A_eq=Aeq / row_norms[:, np.newaxis], b_eq=beq / row_norms, bounds=[(0, None)] * m,
                   method="highs")
     if res.status != 0 or getattr(res, 'x', None) is None or b @ res.x > -1e-9:
         return None, "no numeric ray (status %s val %.3g)" % (res.status,

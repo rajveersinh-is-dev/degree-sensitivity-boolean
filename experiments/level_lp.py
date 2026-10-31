@@ -46,7 +46,9 @@ def lp_feasible(n: int, d: int):
     ub = np.array([1.0 - float(k) for k in range(2, n + 1)])
     A_ub = np.vstack([A, -A])
     b_ub = np.concatenate([ub, -lb])
-    res = linprog(c=np.zeros(num), A_ub=A_ub, b_ub=b_ub,
+    row_norms = np.abs(A_ub).max(axis=1)
+    row_norms[row_norms == 0] = 1.0
+    res = linprog(c=np.zeros(num), A_ub=A_ub / row_norms[:, np.newaxis], b_ub=b_ub / row_norms,
                   bounds=[(None, None)] * num, method="highs")
     return res.status, (res.x if res.status == 0 else None)
 

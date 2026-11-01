@@ -211,7 +211,7 @@ def run_case(n, d, do_milp=True):
         r = linprog(c=np.zeros(nv), A_ub=A / row_norms[:, np.newaxis], b_ub=b / row_norms, bounds=[(None, None)] * nv,
                     method="highs")
         pt = None
-        if r.status == 0:
+        if r.status == 0 and getattr(r, 'x', None) is not None:
             pt = tuple(Fr(float(x)).limit_denominator(10 ** 7) for x in r.x)
             while not exact_check_rows(rows, pt):
                 pt = tuple(x + Fr(1, 10 ** 6) for x in pt)  # nudge
@@ -262,7 +262,7 @@ def milp_integrality(n, d, rows, aff):
                integrality=integrality)
     pr("  MILP (integrality of b_k for k>d):", res.status,
        "(0=feasible, 2=infeasible, other=unknown)")
-    if res.status == 0:
+    if res.status == 0 and getattr(res, 'x', None) is not None:
         pr("    integer b_k:", ", ".join(
             "b_%d=%d" % (k, round(res.x[nv + (k - d - 1)])) for k in range(d + 1, n + 1)))
 

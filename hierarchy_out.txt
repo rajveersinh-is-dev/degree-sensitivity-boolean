@@ -1,0 +1,37 @@
+========================================================================
+hierarchy case (n=6, d=3, levels=1)
+  variables: 14  rows: 114
+  FEASIBLE (exact rational point verified), max-slack ~ 0
+  master level counts: b_2=15, b_3=10, b_4=0, b_5=0, b_6=1
+========================================================================
+hierarchy case (n=7, d=3, levels=1)
+  variables: 16  rows: 162
+  UNKNOWN: no numeric ray (val 0)
+========================================================================
+hierarchy case (n=9, d=4, levels=1)
+  variables: 30  rows: 282
+  FEASIBLE (exact rational point verified), max-slack ~ 0
+  master level counts: b_2=1109/34, b_3=6257/170, b_4=166/17, b_5=142/17, b_6=1165/34, b_7=1061/34, b_8=741/85, b_9=0
+========================================================================
+hierarchy case (n=10, d=4, levels=1)
+  variables: 33  rows: 354
+  FEASIBLE (exact rational point verified), max-slack ~ 0
+  master level counts: b_2=45, b_3=70, b_4=35, b_5=0, b_6=35, b_7=70, b_8=45, b_9=10, b_10=0
+========================================================================
+hierarchy case (n=11, d=4, levels=1)
+  variables: 36  rows: 434
+  UNKNOWN: no numeric ray (val 0)
+========================================================================
+hierarchy case (n=14, d=5, levels=1)
+  variables: 60  rows: 722
+  FEASIBLE (exact rational point verified), max-slack ~ 0
+  master level counts: b_2=1001/12, b_3=520/3, b_4=429/4, b_5=0, b_6=1001/2, b_7=1716, b_8=5005/2, b_9=2002, b_10=3575/4, b_11=572/3, b_12=91/12, b_13=0, b_14=1
+========================================================================
+hierarchy case (n=15, d=5, levels=1)
+  variables: 64  rows: 834
+  FEASIBLE (exact rational point verified), max-slack ~ 0
+  master level counts: b_2=2583/25, b_3=6622/25, b_4=1281/5, b_5=0, b_6=1694/5, b_7=53361/25, b_8=107514/25, b_9=23331/5, b_10=3003, b_11=5544/5, b_12=4753/25, b_13=42/25, b_14=0, b_15=1
+========================================================================
+hierarchy case (n=16, d=5, levels=1)
+  variables: 68  rows: 954
+  UNKNOWN: no numeric ray (val 0)

@@ -1,0 +1,7 @@
+d= 2 n_min=  4  d^c=3.09712530526048581452  feasible=False
+     EXACT FARKAS CERT ok: 2 nonzeros, b.y=-1
+d= 3 n_min=  7  d^c=6.00000000000000000000  feasible=False
+     EXACT FARKAS CERT ok: 3 nonzeros, b.y=-1
+d= 4 n_min= 10  d^c=9.59218515648485744059  feasible=True
+d= 5 n_min= 14  d^c=13.8029201922960255126  feasible=True
+d= 6 n_min= 19  d^c=18.5827518315629148871  feasible=True

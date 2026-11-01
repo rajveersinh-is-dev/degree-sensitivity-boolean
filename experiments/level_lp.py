@@ -50,7 +50,7 @@ def lp_feasible(n: int, d: int):
     row_norms[row_norms == 0] = 1.0
     res = linprog(c=np.zeros(num), A_ub=A_ub / row_norms[:, np.newaxis], b_ub=b_ub / row_norms,
                   bounds=[(None, None)] * num, method="highs")
-    return res.status, (res.x if res.status == 0 else None)
+    return res.status, (res.x if res.status == 0 and getattr(res, 'x', None) is not None else None)
 
 
 def n_lp(d: int, nmax: int = 300, tol: float = 1e-7):

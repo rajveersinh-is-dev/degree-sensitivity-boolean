@@ -153,7 +153,7 @@ if __name__ == "__main__":
         for mo in (False,):
             st, res = milp_feasible(n, d, master_only=mo, time_limit=120)
             print(f"n={n} d={d} master_only={mo}: status={st}")
-            if st == 0:
+            if st == 0 and getattr(res, 'x', None) is not None:
                 nv = d - 1
                 # recover b values
                 nb = n - 1

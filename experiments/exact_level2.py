@@ -94,7 +94,7 @@ def feas_point(rows, nv):
     row_norms[row_norms == 0] = 1.0
     res = linprog(c=np.array([0.0] * nv + [-1.0]), A_ub=A2 / row_norms[:, np.newaxis], b_ub=b / row_norms,
                   bounds=[(None, None)] * nv + [(None, None)], method="highs")
-    if res.status == 0 and res.x[nv] > 0:
+    if res.status == 0 and getattr(res, 'x', None) is not None and res.x[nv] > 0:
         pt = rat(res.x[:nv])
         if check_rows(rows, pt):
             return pt, res.x[nv]
@@ -109,7 +109,7 @@ def feas_point(rows, nv):
     row_norms[row_norms == 0] = 1.0
     res = linprog(c=np.zeros(nv), A_ub=A / row_norms[:, np.newaxis], b_ub=b / row_norms, bounds=[(None, None)] * nv,
                   method="highs")
-    if res.status == 0:
+    if res.status == 0 and getattr(res, 'x', None) is not None:
         pt = rat(res.x[:nv])
         if check_rows(rows, pt):
             return pt, 0.0
@@ -129,8 +129,8 @@ def farkas(rows, nv):
     row_norms = np.abs(Aeq).max(axis=1)
     row_norms[row_norms == 0] = 1.0
     res = linprog(c=b, A_eq=Aeq / row_norms[:, np.newaxis], b_eq=beq / row_norms, bounds=[(0, None)] * m, method="highs")
-    if res.status != 0 or b @ res.x > -1e-9:
-        return None, "no numeric ray (status %s, val %.3g)" % (res.status, b @ res.x)
+    if res.status != 0 or getattr(res, 'x', None) is None or b @ res.x > -1e-9:
+        return None, "no numeric ray (status %s, val %.3g)" % (res.status, b @ res.x if getattr(res, 'x', None) is not None else float('nan'))
     dbl = np.where(np.abs(res.x) > 1e-7)[0]
     # exact: choose nv+1 indices from support, solve A^T y = 0 (nv rows), b.y = -1
     best = None

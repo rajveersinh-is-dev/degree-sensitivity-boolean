@@ -103,7 +103,7 @@ def linprog_feasible(rows, nv):
     row_norms[row_norms == 0] = 1.0
     res = linprog(c=[0.0] * nv, A_ub=A / row_norms[:, np.newaxis], b_ub=b / row_norms,
                   bounds=[(None, None)] * nv, method="highs")
-    if res.status == 0:
+    if res.status == 0 and getattr(res, 'x', None) is not None:
         return True, res.x
     if res.status == 2:
         if "Model error" in getattr(res, 'message', ''):

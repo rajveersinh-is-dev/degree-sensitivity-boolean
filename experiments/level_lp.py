@@ -28,7 +28,7 @@ We probe n_LP(d) for small d by LP.
 """
 from math import comb, log
 import numpy as np
-from scipy.optimize import linprog
+from utils import linprog_scaled
 from exponent_math import C_CRIT, Decimal
 
 
@@ -46,11 +46,9 @@ def lp_feasible(n: int, d: int):
     ub = np.array([1.0 - float(k) for k in range(2, n + 1)])
     A_ub = np.vstack([A, -A])
     b_ub = np.concatenate([ub, -lb])
-    row_norms = np.abs(A_ub).max(axis=1)
-    row_norms[row_norms == 0] = 1.0
-    res = linprog(c=np.zeros(num), A_ub=A_ub / row_norms[:, np.newaxis], b_ub=b_ub / row_norms,
-                  bounds=[(None, None)] * num, method="highs")
-    return res.status, (res.x if res.status == 0 and getattr(res, 'x', None) is not None else None)
+    res = linprog_scaled(c=np.zeros(num), A_ub=A_ub, b_ub=b_ub,
+                         bounds=[(None, None)] * num)
+    return res.status, (res.x if res.status == 0 and res.x is not None else None)
 
 
 def n_lp(d: int, nmax: int = 300, tol: float = 1e-7):

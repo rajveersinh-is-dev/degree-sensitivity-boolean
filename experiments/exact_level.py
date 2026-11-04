@@ -148,7 +148,7 @@ def gcd(a, b):
 def vertices_and_point(n, d):
     """Numerically find vertices of LP(n,d), then verify exactly."""
     import numpy as np
-    from scipy.optimize import linprog
+    from utils import linprog_scaled
     rows, aff = build_system(n, d)
     nv = d - 1
     A = np.array([[float(z) for z in c] for (c, b) in rows])
@@ -202,16 +202,14 @@ def run_case(n, d, do_milp=True):
     if feas:
         # find a feasible point numerically for reporting
         import numpy as np
-        from scipy.optimize import linprog
+        from utils import linprog_scaled
         nv = d - 1
         A = np.array([[float(z) for z in c] for (c, b) in rows])
         b = np.array([float(x) for (_, x) in rows])
-        row_norms = np.abs(A).max(axis=1)
-        row_norms[row_norms == 0] = 1.0
-        r = linprog(c=np.zeros(nv), A_ub=A / row_norms[:, np.newaxis], b_ub=b / row_norms, bounds=[(None, None)] * nv,
-                    method="highs")
+
+        r = linprog_scaled(c=np.zeros(nv), A_ub=A, b_ub=b, bounds=[(None, None)] * nv)
         pt = None
-        if r.status == 0 and getattr(r, 'x', None) is not None:
+        if r.status == 0 and r.x is not None:
             pt = tuple(Fr(float(x)).limit_denominator(10 ** 7) for x in r.x)
             while not exact_check_rows(rows, pt):
                 pt = tuple(x + Fr(1, 10 ** 6) for x in pt)  # nudge

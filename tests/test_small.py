@@ -68,6 +68,13 @@ def main():
         (10, 4, True),
         (9, 4, False)
     ]
+
+    from exponent_math import nmin
+    for d in range(2, 21):
+        n_min_d, _ = nmin(d)
+        math_cases.append((n_min_d, d, True))
+        math_cases.append((n_min_d - 1, d, False))
+
     math_ok = True
     for n, d, expected in math_cases:
         res = pow_gt(n, d)

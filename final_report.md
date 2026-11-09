@@ -2,34 +2,31 @@ FINAL REPORT
 
 A. Repository and baseline
 - Repository: degree-sensitivity-boolean
-- Branch: refactor/linprog-utils
-- Starting commit: 1cb4babfd406f21dbf415996959f5f382cec362f
-- Resulting commit: To be created
-- Scope examined: `experiments/*.py` scripts using `scipy.optimize.linprog` with matrix row scaling logic.
+- Branch: next-run-improvements
+- Starting commit: Initial state at run start
+- Scope examined: Evaluated the "Next-run priorities" from the previous execution (`report_scaling.md`), which included CI configuration updates and additional verification on `hierarchy_milp.py` for configurations like `(14,5)`.
 
 B. Improvements implemented
-- Problem discovered: Matrix infinity-norm scaling logic for `scipy.optimize.linprog` was duplicated across five experimental scripts (`amanotype.py`, `exact_level.py`, `exact_level2.py`, `hierarchy_lp.py`, `level_lp.py`). Also, defensive handling for `res.x` missing on model error was inconsistent.
-- Root cause: Logic was duplicated rather than extracted into a common utility function.
-- Solution implemented: Created `experiments/utils.py` with `linprog_scaled`, abstracting the `np.abs(A).max(axis=1)` scaling logic and strictly guaranteeing `res.x` is initialized safely (`res.x = None` if missing). This allowed cleaning up `getattr(res, 'x', None) is not None` to `res.x is not None` across all files.
-- Files or components affected: `experiments/utils.py`, `experiments/amanotype.py`, `experiments/exact_level.py`, `experiments/exact_level2.py`, `experiments/hierarchy_lp.py`, `experiments/level_lp.py`.
-- Expected and demonstrated benefit: Eliminates duplication, simplifies linear programming calls in mathematical searches, and structurally prevents runtime crashes on missing result vector arrays.
+- Problem discovered: The previous run successfully fixed `scipy.optimize.linprog` scaling issues for large matrix bounds, but we did not have automated regression tests in GitHub Actions CI to continuously verify the large configurations or the integrality-augmented hierarchy checking.
+- Root cause: Missing test files for large bounds (`tests/test_large.py`) and for the MILP hierarchy logic (`tests/test_hierarchy.py`), and the `.github/workflows/ci.yml` wasn't configured to run them.
+- Solution implemented: Created `tests/test_hierarchy.py` and `tests/test_large.py` to lock in the expected outcomes of the large scan and MILP algorithms, and added these tests to `.github/workflows/ci.yml`.
+- Files or components affected: `tests/test_hierarchy.py`, `tests/test_large.py`, `.github/workflows/ci.yml`.
+- Expected and demonstrated benefit: Future changes will automatically test large geometric constraints (like `d=16` which historically caused Highs solver errors) and MILP constraint behavior.
 
 C. Verification results
-| Check or command | Actual outcome | Relevant output | Explanation |
-|---|---|---|---|
-| `python tests/test_small.py` | PASS | ALL PASS | Validates overall behavior remains exact and unchanged. |
-| `python experiments/scan_level_d.py 6` | PASS | Valid geometric outputs | Independent verification that scaling still functionally bounds search trees. |
+| Check or command | Actual outcome | Relevant output or evidence | Explanation |
+| :--- | :--- | :--- | :--- |
+| `python tests/test_hierarchy.py` | PASS | `ALL PASS` for `(9, 4)`, `(10, 4)`, `(11, 4)`, `(14, 5)`, `(15, 5)`, `(16, 5)`. | Verifies integer logic correctness. |
+| `python tests/test_large.py` | PASS | `PASS d=16 test` | Verifies `scan_level_d.py` operates properly scaling massive values. |
 
 D. Measurable impact
-- Eliminated 40+ lines of duplicate logic.
-- Standardized LP matrix scale error resilience.
+- CI pipeline coverage is substantially extended to test mathematically heavy routines, locking in previous scaling enhancements explicitly.
 
 E. Remaining risks
-- Deep recursive searches might still timeout; timeout controls apply standard CPU bounds.
+- Deep combinatorial LP or MILP searches for values greater than `d=16` may still prove computationally expensive inside standard CI runners without further optimization.
 
 F. Next-run priorities
-- Add CI configuration file for automated verification (e.g., GitHub Actions).
-- Expand search timeout parameters intelligently across larger configurations.
+- Check and robustify parsing of results in `ksearch2.py` against potential timeouts or unbounded variables, which was listed previously but requires distinct evaluation on the CP-SAT engine.
 
 G. Overall verdict
 VERIFIED IMPROVEMENT

@@ -5,3 +5,13 @@ d= 3 n_min=  7  d^c=6.00000000000000000000  feasible=False
 d= 4 n_min= 10  d^c=9.59218515648485744059  feasible=True
 d= 5 n_min= 14  d^c=13.8029201922960255126  feasible=True
 d= 6 n_min= 19  d^c=18.5827518315629148871  feasible=True
+d= 7 n_min= 24  d^c=23.8943674561297541822  feasible=True
+d= 8 n_min= 30  d^c=29.7081993808932649921  feasible=True
+d= 9 n_min= 37  d^c=36.0000000000000000000  feasible=True
+d=10 n_min= 43  d^c=42.7493734140509515752  feasible=True
+d=11 n_min= 50  d^c=49.9388245013236758847  feasible=True
+d=12 n_min= 58  d^c=57.5531109389091446435  feasible=True
+d=13 n_min= 66  d^c=65.5787836381301577251  feasible=True
+d=14 n_min= 75  d^c=74.0038501015720828107  feasible=True
+d=15 n_min= 83  d^c=82.8175211537761530757  feasible=True
+d=16 n_min= 93  d^c=92.0100160762884290251  feasible=True

@@ -26,3 +26,5 @@ jobs:
     - name: Run tests
       run: |
         python tests/test_small.py
+        python tests/test_hierarchy.py
+        python tests/test_large.py
